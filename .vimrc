@@ -1,6 +1,15 @@
-"##################
+"#################
 
 "source ~/.vim/php-doc.vim
+
+" highlight trailing spaces
+au BufNewFile,BufRead * let b:mtrailingws=matchadd('ErrorMsg', '\s\+$', -1)
+" highlight tabs between spaces
+au BufNewFile,BufRead * let b:mtabbeforesp=matchadd('ErrorMsg', '\v(\t+)\ze( +)', -1)
+au BufNewFile,BufRead * let b:mtabaftersp=matchadd('ErrorMsg', '\v( +)\zs(\t+)', -1)
+" disable matches in help buffers
+au BufEnter,FileType help call clearmatches()
+
 inoremap <C-P> <ESC> :call PhpDocSingle()<CR>i
 nnoremap <C-P> :call PhpDocSingle()<CR>
 vnoremap <C-P> :call PhpDocSingle()<CR>
@@ -13,7 +22,7 @@ colo railscasts
 set number
 nnoremap <silent> <F8> :TlistToggle<CR>
 set encoding=cp1251
-set fileencodings=utf8,cp1251
+set fileencodings=cp1251,utf8
 nmap <silent> <F9> <Plug>ToggleProject
 
 map <F6> <Esc>?{<CR>zf%<F3>
@@ -141,3 +150,27 @@ inoremap <C-B> <C-X><C-O>
 nnoremap <C-e> 3<C-e>
 nnoremap <C-y> 3<C-y>
 
+"python
+autocmd BufRead *.py set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
+autocmd BufRead *.py set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+autocmd BufRead *.py nmap <F5> :!python %<CR>
+
+function! RunPhpcs()
+    let l:filename=@%
+    let l:phpcs_output=system('phpcs --report=csv --standard=Zend '.l:filename)
+    echo l:phpcs_output
+    let l:phpcs_list=split(l:phpcs_output, "\n")
+    unlet l:phpcs_list[0]
+    cexpr l:phpcs_list
+    cwindow
+endfunction
+
+set errorformat+=\"%f\"\\,%l\\,%c\\,%t%*[a-zA-Z]\\,\"%m\"
+command! Phpcs execute RunPhpcs()
+
+"window manage
+
+imap <C-UP> <Esc><C-w>+i
+imap <C-DOWN> <Esc><C-w>-i
+map <C-UP> <C-w>+
+map <C-DOWN> <C-w>-
